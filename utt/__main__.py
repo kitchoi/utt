@@ -5,7 +5,7 @@ import os
 
 from . import cmd_add, cmd_edit, cmd_hello, cmd_stretch, cmd_report
 from .__version__ import version
-
+from . import argcomplete
 
 def main():
     parser = argparse.ArgumentParser(
@@ -22,6 +22,7 @@ def main():
     if len(sys.argv) == 1:
         sys.argv.append('--help')
 
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     handler = handlers.get(args.command)
 
