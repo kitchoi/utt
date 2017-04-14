@@ -1,0 +1,104 @@
+COMMANDS="add edit hello stretch report"
+DAYS="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 01 02 03 04 05 06 07 08 09"
+MONTHS="1 2 3 4 5 6 7 8 9 10 11 12 01 02 03 04 05 06 07 08 09"
+
+_utt_add() {
+    local IFS=$'\n'
+    COMPREPLY=($(compgen -P '"' -S '"' -W '`cat ~/.local/share/utt/utt.log | cut -d " " -f 3- | sort | uniq`' -- $cur))
+}
+
+_utt_edit() {
+    COMPREPLY=()
+}
+
+_utt_hello() {
+    COMPREPLY=()
+}
+
+_utt_stretch() {
+    COMPREPLY=()
+}
+
+_utt_utt() {
+    case "$prev" in
+        --data)
+            COMPREPLY=($(compgen -d $cur))
+            compopt -o nospace
+            return
+            ;;
+    esac
+
+    case "$cur" in
+        -*)
+            COMPREPLY=($(compgen -W "--data -h --help" -- $cur))
+            ;;
+        *)
+            COMPREPLY=($(compgen -W "$COMMANDS" -- $cur))
+            ;;
+    esac
+}
+
+_utt_report() {
+    case "$prev" in
+        --current-activity)
+            return # return possible activities
+            ;;
+    esac
+
+    YEARS=$(cat ~/.local/share/utt/utt.log | cut -d '-' -f 1 | sort | uniq)
+
+    PREVIOUS_IFS="$IFS"
+    IFS="-"
+    date=( $cur )
+    IFS="$PREVIOUS_IFS"
+
+    case "$cur" in
+        +([0-9])-+([0-9])-*([0-9]))
+            COMPREPLY=($(compgen -P "${date[0]}-${date[1]}-" -W "$DAYS" -- ${date[2]}))
+            ;;
+        +([0-9])-*([0-9]))
+            COMPREPLY=($(compgen -P "${date[0]}-" -W "$MONTHS" -S "-" -- ${date[1]}))
+            compopt -o nospace
+            ;;
+        -*)
+            COMPREPLY=($(compgen -W "--current-activity --no-current-activity -h --help" -- $cur))
+            ;;
+        *)
+            COMPREPLY=($(compgen -W "$YEARS" -S "-" -- $cur))
+            compopt -o nospace
+            ;;
+    esac
+}
+
+_utt()
+{
+    COMPREPLY=()
+    local cur prev words cword
+    _get_comp_words_by_ref -n : cur prev words cword
+
+    local command='utt'
+    local counter=1
+    while [ $counter -lt $cword ]; do
+	case "${words[$counter]}" in
+            -h)
+		(( counter++ ))
+                ;;
+	    -*)
+		;;
+	    *)
+		command="${words[$counter]}"
+		cpos=$counter
+		(( cpos++ ))
+		break
+		;;
+	esac
+	(( counter++ ))
+    done
+
+    local completions_func=_utt_${command}
+    declare -F $completions_func >/dev/null && $completions_func
+
+    return 0
+}
+
+complete -F _utt utt
