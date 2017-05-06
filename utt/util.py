@@ -47,14 +47,29 @@ def entries_from_file(filename):
 def parse_datetime(datetimestring):
     return datetime.datetime.strptime(datetimestring, "%Y-%m-%d %H:%M")
 
+
+def utt_touch_path(szPath):
+    try:
+        os.makedirs(szPath, 0o770)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+
+    return szPath
+
+
 def user_data_dir():
-    return os.getenv('XDG_DATA_HOME', os.path.expanduser("~/.local/share"))
+    szPath = os.getenv('XDG_DATA_HOME', os.path.expanduser("~/.local/share"))
+    szPath = os.path.join(szPath, 'utt')
+    return utt_touch_path(szPath)
+
 
 def utt_filename():
-    return os.path.join(user_data_dir(), 'utt', 'utt.log')
+    return os.path.join(user_data_dir(), 'utt.log')
+
 
 def utt_debug_log():
-    return os.path.join(user_data_dir(), 'utt', 'debug.log'),
+    return os.path.join(user_data_dir(), 'debug.log')
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # PRIVATE

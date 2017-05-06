@@ -31,6 +31,7 @@ def add_args(parser):
         help="Do not display the current activity")
 
 
+
 def execute(args):
     report_date = None
     if args.report_date is None:
